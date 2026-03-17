@@ -25,7 +25,6 @@ import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener
 import org.greenrobot.eventbus.EventBus
 import org.zotero.android.BuildConfig
-import org.zotero.android.R
 import org.zotero.android.androidx.content.longToast
 import org.zotero.android.architecture.BaseActivity
 import org.zotero.android.architecture.Defaults
@@ -99,7 +98,7 @@ internal class DashboardActivity : BaseActivity() {
             intent.setDataAndType(resultUri, mimeType)
             intent.putExtra(MediaStore.EXTRA_OUTPUT, resultUri)
             intent.flags = FLAG_GRANT_READ_URI_PERMISSION
-            showAppChooserExcludingZoteroApp(intent, getString(R.string.open_in_other_app))
+            showAppChooserExcludingZoteroApp(intent)
         }
 
         val onOpenWebpage: (url: String) -> Unit = { url ->
@@ -192,10 +191,10 @@ internal class DashboardActivity : BaseActivity() {
 
     }
 
-    private fun showAppChooserExcludingZoteroApp(intent: Intent, title: String = "Share file") {
+    private fun showAppChooserExcludingZoteroApp(intent: Intent) {
         val noAppFoundMessage = "No app found to open this file"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val chooserIntent = Intent.createChooser(intent, title)
+            val chooserIntent = Intent.createChooser(intent, "Share file")
             val allIntentActivities = packageManager.queryIntentActivities(intent, 0)
             val excludedApps = allIntentActivities
                 .filter { it.activityInfo.name.contains("org.zotero.android") }
@@ -209,9 +208,8 @@ internal class DashboardActivity : BaseActivity() {
                 startActivity(chooserIntent)
             }
         } else {
-            val chooserIntent = Intent.createChooser(intent, title)
             if (intent.resolveActivity(packageManager) != null) {
-                startActivity(chooserIntent)
+                startActivity(intent)
             } else {
                 longToast(noAppFoundMessage)
             }
