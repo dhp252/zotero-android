@@ -1336,7 +1336,7 @@ internal sealed class AllItemsViewEffect : ViewEffect {
     object ShowCollectionPickerEffect: AllItemsViewEffect()
     data class ShowPhoneFilterEffect(val params: String) : AllItemsViewEffect()
     data class OpenWebpage(val url: String) : AllItemsViewEffect()
-    data class OpenFile(val file: File, val mimeType: String) : AllItemsViewEffect()
+    data class OpenFile(val file: File, val mimeType: String, val forceChooser: Boolean = false) : AllItemsViewEffect()
     data class ShowZoteroWebView(val url: String): AllItemsViewEffect()
     object ShowVideoPlayer : AllItemsViewEffect()
     object ShowImageViewer : AllItemsViewEffect()

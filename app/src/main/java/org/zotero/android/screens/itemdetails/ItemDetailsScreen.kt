@@ -29,7 +29,7 @@ internal fun ItemDetailsScreen(
     navigateToImageViewerScreen: () -> Unit,
     navigateToZoterWebViewScreen: (String) -> Unit,
     onBack: () -> Unit,
-    onOpenFile: (file: File, mimeType: String) -> Unit,
+    onOpenFile: (file: File, mimeType: String, forceChooser: Boolean) -> Unit,
     onShowPdf: (String) -> Unit,
     onOpenWebpage: (url: String) -> Unit,
     onPickFile: () -> Unit,
@@ -72,7 +72,7 @@ internal fun ItemDetailsScreen(
                 }
 
                 is ItemDetailsViewEffect.OpenFile -> {
-                    onOpenFile(consumedEffect.file, consumedEffect.mimeType)
+                    onOpenFile(consumedEffect.file, consumedEffect.mimeType, consumedEffect.forceChooser)
                 }
 
                 is ItemDetailsViewEffect.NavigateToPdfScreen -> {

@@ -91,14 +91,33 @@ internal class DashboardActivity : BaseActivity() {
             pickFileCallPoint = callPoint
             pickFileLauncher.launch(pickFileIntent())
         }
-        val onOpenFile: (file: File, mimeType: String) -> Unit = { file, mimeType ->
+        val onOpenFile: (file: File, mimeType: String, forceChooser: Boolean) -> Unit = { file, mimeType, forceChooser ->
             val fileProviderAuthority = BuildConfig.APPLICATION_ID + ".provider"
             val resultUri = FileProvider.getUriForFile(this, fileProviderAuthority, file)
             val intent = Intent(Intent.ACTION_VIEW)
             intent.setDataAndType(resultUri, mimeType)
             intent.putExtra(MediaStore.EXTRA_OUTPUT, resultUri)
             intent.flags = FLAG_GRANT_READ_URI_PERMISSION
-            showAppChooserExcludingZoteroApp(intent)
+
+            val preferredComponentStr = defaults.getExternalAppPreference(mimeType)
+            if (preferredComponentStr != null && !forceChooser) {
+                val componentName = ComponentName.unflattenFromString(preferredComponentStr)
+                if (componentName != null) {
+                    val directIntent = Intent(intent)
+                    directIntent.component = componentName
+                    try {
+                        startActivity(directIntent)
+                    } catch (e: Exception) {
+                        // App might have been uninstalled
+                        defaults.setExternalAppPreference(mimeType, null)
+                        showAppChooserExcludingZoteroApp(intent, mimeType, forceChooser)
+                    }
+                } else {
+                    showAppChooserExcludingZoteroApp(intent, mimeType, forceChooser)
+                }
+            } else {
+                showAppChooserExcludingZoteroApp(intent, mimeType, forceChooser)
+            }
         }
 
         val onOpenWebpage: (url: String) -> Unit = { url ->
@@ -191,29 +210,74 @@ internal class DashboardActivity : BaseActivity() {
 
     }
 
-    private fun showAppChooserExcludingZoteroApp(intent: Intent) {
+    private fun showAppChooserExcludingZoteroApp(intent: Intent, mimeType: String? = null, forceChooser: Boolean = false) {
         val noAppFoundMessage = "No app found to open this file"
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val chooserIntent = Intent.createChooser(intent, "Share file")
-            val allIntentActivities = packageManager.queryIntentActivities(intent, 0)
-            val excludedApps = allIntentActivities
-                .filter { it.activityInfo.name.contains("org.zotero.android") }
-                .map {
-                    ComponentName(it.activityInfo.packageName, it.activityInfo.name)
-                }
-            chooserIntent.putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, excludedApps.toTypedArray())
-            if (allIntentActivities.size == excludedApps.size) {
-                longToast(noAppFoundMessage)
-            } else {
-                startActivity(chooserIntent)
-            }
-        } else {
-            if (intent.resolveActivity(packageManager) != null) {
-                startActivity(intent)
-            } else {
-                longToast(noAppFoundMessage)
+
+        val allIntentActivities = packageManager.queryIntentActivities(intent, 0)
+        val validActivities = allIntentActivities.filter { !it.activityInfo.name.contains("org.zotero.android") }
+
+        if (validActivities.isEmpty()) {
+            longToast(noAppFoundMessage)
+            return
+        }
+
+        if (validActivities.size == 1 && !forceChooser) {
+            val resolveInfo = validActivities.first()
+            val targetIntent = Intent(intent)
+            targetIntent.component = ComponentName(resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name)
+            startActivity(targetIntent)
+            return
+        }
+
+        val adapter = object : android.widget.ArrayAdapter<android.content.pm.ResolveInfo>(
+            this,
+            android.R.layout.select_dialog_item,
+            android.R.id.text1,
+            validActivities
+        ) {
+            override fun getView(position: Int, convertView: android.view.View?, parent: android.view.ViewGroup): android.view.View {
+                val view = super.getView(position, convertView, parent)
+                val tv = view.findViewById<android.widget.TextView>(android.R.id.text1)
+                val resolveInfo = getItem(position)!!
+                tv.text = resolveInfo.loadLabel(packageManager)
+                val icon = resolveInfo.loadIcon(packageManager)
+                val size = (32 * resources.displayMetrics.density).toInt()
+                icon.setBounds(0, 0, size, size)
+                tv.setCompoundDrawables(icon, null, null, null)
+                tv.compoundDrawablePadding = (16 * resources.displayMetrics.density).toInt()
+                return view
             }
         }
+
+        val container = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            val padding = (16 * resources.displayMetrics.density).toInt()
+            setPadding(padding, padding, padding, padding)
+        }
+        val checkBox = android.widget.CheckBox(this).apply {
+            text = "Always open this file type with the selected app"
+        }
+        
+        container.addView(checkBox)
+
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Open with")
+            .setView(container)
+            .setAdapter(adapter) { dialog, which ->
+                val resolveInfo = validActivities[which]
+                val componentName = ComponentName(resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name)
+
+                if (checkBox.isChecked && mimeType != null) {
+                    defaults.setExternalAppPreference(mimeType, componentName.flattenToString())
+                }
+
+                val targetIntent = Intent(intent).apply {
+                    component = componentName
+                }
+                startActivity(targetIntent)
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun pickFileIntent(): Intent {

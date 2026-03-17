@@ -24,7 +24,7 @@ internal fun DashboardRootTabletNavigationScreen(
     collectionDefaultValue: String,
     onPickFile: (callPoint: EventBusConstants.FileWasSelected.CallPoint) -> Unit,
     onExportHtml: (file: File) -> Unit,
-    onOpenFile: (file: File, mimeType: String) -> Unit,
+    onOpenFile: (file: File, mimeType: String, forceChooser: Boolean) -> Unit,
     onOpenWebpage: (url: String) -> Unit,
     onShowPdf: (String) -> Unit,
     toAddOrEditNote: (String) -> Unit,

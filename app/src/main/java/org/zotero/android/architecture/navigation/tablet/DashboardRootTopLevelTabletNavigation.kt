@@ -33,7 +33,7 @@ import java.io.File
 internal fun DashboardRootTopLevelTabletNavigation(
     collectionDefaultValue: String,
     onPickFile: (callPoint: EventBusConstants.FileWasSelected.CallPoint) -> Unit,
-    onOpenFile: (file: File, mimeType: String) -> Unit,
+    onOpenFile: (file: File, mimeType: String, forceChooser: Boolean) -> Unit,
     onOpenWebpage: (url: String) -> Unit,
     onExportPdf: (file: File) -> Unit,
     onExportHtml: (file: File) -> Unit,
@@ -93,7 +93,7 @@ internal fun DashboardRootTopLevelTabletNavigation(
 private fun NavGraphBuilder.dashboardScreen(
     collectionDefaultValue: String,
     onPickFile: (callPoint: EventBusConstants.FileWasSelected.CallPoint) -> Unit,
-    onOpenFile: (file: File, mimeType: String) -> Unit,
+    onOpenFile: (file: File, mimeType: String, forceChooser: Boolean) -> Unit,
     onShowPdf: (String) -> Unit,
     onExportHtml: (file: File) -> Unit,
     toAddOrEditNote: (String) -> Unit,

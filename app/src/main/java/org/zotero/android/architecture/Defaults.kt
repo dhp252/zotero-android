@@ -515,6 +515,14 @@ open class Defaults @Inject constructor(
         sharedPreferences.edit { putString(this@Defaults.exportOutputMode, json) }
     }
 
+    fun setExternalAppPreference(mimeType: String, componentString: String?) {
+        sharedPreferences.edit { putString("ext_app_$mimeType", componentString) }
+    }
+
+    fun getExternalAppPreference(mimeType: String): String? {
+        return sharedPreferences.getString("ext_app_$mimeType", null)
+    }
+
     fun reset() {
         setUsername("")
         setDisplayName("")

@@ -34,7 +34,7 @@ import java.io.File
 @Composable
 internal fun TabletRightPaneNavigation(
     onPickFile: (callPoint: CallPoint) -> Unit,
-    onOpenFile: (file: File, mimeType: String) -> Unit,
+    onOpenFile: (file: File, mimeType: String, forceChooser: Boolean) -> Unit,
     onShowPdf: (String) -> Unit,
     onExportHtml: (file: File) -> Unit,
     toAddOrEditNote: (String) -> Unit,

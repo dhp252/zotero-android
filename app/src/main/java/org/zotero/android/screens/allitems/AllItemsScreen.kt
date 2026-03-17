@@ -27,7 +27,7 @@ import java.io.File
 internal fun AllItemsScreen(
     viewModel: AllItemsViewModel = hiltViewModel(),
     onPickFile: () -> Unit,
-    onOpenFile: (file: File, mimeType: String) -> Unit,
+    onOpenFile: (file: File, mimeType: String, forceChooser: Boolean) -> Unit,
     onOpenWebpage: (url: String) -> Unit,
     navigateToCollectionsScreen: (String) -> Unit,
     navigateToSinglePicker: () -> Unit,
@@ -106,7 +106,8 @@ internal fun AllItemsScreen(
 
                 is AllItemsViewEffect.OpenFile -> onOpenFile(
                     consumedEffect.file,
-                    consumedEffect.mimeType
+                    consumedEffect.mimeType,
+                    consumedEffect.forceChooser
                 )
 
                 is AllItemsViewEffect.OpenWebpage -> onOpenWebpage(consumedEffect.url)

@@ -1672,22 +1672,27 @@ class ItemDetailsViewModel @Inject constructor(
                     key = attachment.key,
                     filename = filename,
                 )
-                when (contentType) {
-                    "application/pdf" -> {
-                        showPdf(file = file, parentKey = parentKey, attachment = attachment)
-                    }
-                    "text/html", "text/plain" -> {
-                        val url = file.toUri().toString()
-                        val encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
-                        triggerEffect(ItemDetailsViewEffect.ShowZoteroWebView(encodedUrl))
-                    }
-                    else -> {
-                        if (contentType.contains("image")) {
-                            showImageFile(file)
-                        } else if (contentType.contains("video")) {
-                            showVideoFile(file)
-                        } else {
-                            openFile(file, contentType)
+                
+                if (defaults.getExternalAppPreference(contentType) != null) {
+                    openFile(file, contentType)
+                } else {
+                    when (contentType) {
+                        "application/pdf" -> {
+                            showPdf(file = file, parentKey = parentKey, attachment = attachment)
+                        }
+                        "text/html", "text/plain" -> {
+                            val url = file.toUri().toString()
+                            val encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
+                            triggerEffect(ItemDetailsViewEffect.ShowZoteroWebView(encodedUrl))
+                        }
+                        else -> {
+                            if (contentType.contains("image")) {
+                                showImageFile(file)
+                            } else if (contentType.contains("video")) {
+                                showVideoFile(file)
+                            } else {
+                                openFile(file, contentType)
+                            }
                         }
                     }
                 }
@@ -1730,7 +1735,7 @@ class ItemDetailsViewModel @Inject constructor(
             key = attachment.key,
             filename = attachmentType.filename,
         )
-        openFile(file, attachmentType.contentType)
+        triggerEffect(OpenFile(file, attachmentType.contentType, forceChooser = true))
     }
 
     private fun showVideoFile(file: File) {
@@ -2134,7 +2139,7 @@ sealed class ItemDetailsViewEffect : ViewEffect {
     data class ShowAddOrEditNoteEffect(val screenArgs: String) : ItemDetailsViewEffect()
     object ShowVideoPlayer : ItemDetailsViewEffect()
     object ShowImageViewer : ItemDetailsViewEffect()
-    data class OpenFile(val file: File, val mimeType: String) : ItemDetailsViewEffect()
+    data class OpenFile(val file: File, val mimeType: String, val forceChooser: Boolean = false) : ItemDetailsViewEffect()
     data class NavigateToPdfScreen(val params: String) : ItemDetailsViewEffect()
     data class OpenWebpage(val url: String) : ItemDetailsViewEffect()
     data class ShowZoteroWebView(val url: String) : ItemDetailsViewEffect()

@@ -61,7 +61,7 @@ internal const val ARG_ADD_BY_IDENTIFIER = "addByIdentifierArg"
 internal fun DashboardRootPhoneNavigation(
     collectionDefaultValue: String,
     onPickFile: (callPoint: EventBusConstants.FileWasSelected.CallPoint) -> Unit,
-    onOpenFile: (file: File, mimeType: String) -> Unit,
+    onOpenFile: (file: File, mimeType: String, forceChooser: Boolean) -> Unit,
     onOpenWebpage: (url: String) -> Unit,
     onExportPdf: (file: File) -> Unit,
     onExportHtml: (file: File) -> Unit,
