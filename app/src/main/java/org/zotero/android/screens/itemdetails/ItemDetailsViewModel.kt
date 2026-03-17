@@ -1449,6 +1449,9 @@ class ItemDetailsViewModel @Inject constructor(
                 is LongPressOptionItem.MoveToStandaloneAttachment -> {
                     moveToStandalone(longPressOptionItem.attachment)
                 }
+                is LongPressOptionItem.OpenInOtherApp -> {
+                    openAttachmentInOtherApp(longPressOptionItem.attachment)
+                }
                 else -> {}
             }
         }
@@ -1491,6 +1494,7 @@ class ItemDetailsViewModel @Inject constructor(
         val attachmentType = attachment.type
         if (attachmentType is Attachment.Kind.file && attachmentType.location == Attachment.FileLocation.local) {
             actions.add(LongPressOptionItem.DeleteAttachmentFile(attachment))
+            actions.add(LongPressOptionItem.OpenInOtherApp(attachment))
         }
 
         if (!viewState.data.isAttachment) {
@@ -1717,6 +1721,16 @@ class ItemDetailsViewModel @Inject constructor(
 
     private fun openFile(file: File, mime: String) {
         triggerEffect(OpenFile(file, mime))
+    }
+
+    private fun openAttachmentInOtherApp(attachment: Attachment) {
+        val attachmentType = attachment.type as? Attachment.Kind.file ?: return
+        val file = fileStore.attachmentFile(
+            libraryId = attachment.libraryId,
+            key = attachment.key,
+            filename = attachmentType.filename,
+        )
+        openFile(file, attachmentType.contentType)
     }
 
     private fun showVideoFile(file: File) {

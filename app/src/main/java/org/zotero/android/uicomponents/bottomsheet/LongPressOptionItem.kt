@@ -108,4 +108,9 @@ sealed class LongPressOptionItem(
         textAndIconColor = CustomPalette.ErrorRed,
         resIcon = Drawables.cell_trash
     )
+
+    data class OpenInOtherApp(val attachment: Attachment): LongPressOptionItem(
+        titleId = Strings.open_in_other_app,
+        resIcon = Drawables.vertical_align_top_24px
+    )
 }
