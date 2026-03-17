@@ -1,0 +1,31 @@
+{
+    "name": "Zotero Android",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "."
+    },
+    "remoteUser": "vscode",
+    "remoteEnv": {
+        "ANDROID_HOME": "/opt/android-sdk",
+        "ANDROID_SDK_ROOT": "/opt/android-sdk",
+        "JAVA_HOME": "/usr/lib/jvm/java-17-openjdk-amd64"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "vscjava.vscode-java-pack",
+                "mathiasfrohlich.Kotlin"
+            ],
+            "settings": {
+                "java.configuration.runtimes": [
+                    {
+                        "name": "JavaSE-17",
+                        "path": "/usr/lib/jvm/java-17-openjdk-amd64",
+                        "default": true
+                    }
+                ]
+            }
+        }
+    },
+    "postCreateCommand": "chmod +x gradlew && ./gradlew --version"
+}
