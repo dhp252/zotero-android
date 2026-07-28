@@ -249,22 +249,30 @@ internal class DashboardActivity : BaseActivity() {
             }
         }
 
-        val container = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
-            val padding = (16 * resources.displayMetrics.density).toInt()
-            setPadding(padding, padding, padding, padding)
-        }
         val checkBox = android.widget.CheckBox(this).apply {
             text = "Always open this file type with the selected app"
+            val paddingHorizontal = (16 * resources.displayMetrics.density).toInt()
+            val paddingVertical = (8 * resources.displayMetrics.density).toInt()
+            setPadding(paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical)
+            layoutParams = android.widget.AbsListView.LayoutParams(
+                android.widget.AbsListView.LayoutParams.MATCH_PARENT,
+                android.widget.AbsListView.LayoutParams.WRAP_CONTENT
+            )
         }
-        
-        container.addView(checkBox)
 
-        android.app.AlertDialog.Builder(this)
+        val listView = android.widget.ListView(this).apply {
+            addHeaderView(checkBox, null, false)
+            this.adapter = adapter
+        }
+
+        val dialog = android.app.AlertDialog.Builder(this)
             .setTitle("Open with")
-            .setView(container)
-            .setAdapter(adapter) { dialog, which ->
-                val resolveInfo = validActivities[which]
+            .setView(listView)
+            .create()
+
+        listView.setOnItemClickListener { _, _, position, _ ->
+            val resolveInfo = listView.getItemAtPosition(position) as? android.content.pm.ResolveInfo
+            if (resolveInfo != null) {
                 val componentName = ComponentName(resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name)
 
                 if (checkBox.isChecked && mimeType != null) {
@@ -277,7 +285,9 @@ internal class DashboardActivity : BaseActivity() {
                 startActivity(targetIntent)
                 dialog.dismiss()
             }
-            .show()
+        }
+
+        dialog.show()
     }
 
     private fun pickFileIntent(): Intent {
